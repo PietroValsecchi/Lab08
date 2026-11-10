@@ -1,4 +1,5 @@
 from database.distributore_DAO import DistributoreDAO
+from database.prezzo_DAO import PrezzoDAO
 
 '''
     MODELLO:
@@ -25,7 +26,20 @@ class Model:
         :param mese: Mese selezionato (un intero da 1 a 12)
         :return: lista di tuple --> (nome del distributore, media), es. (Distributore A, 1.789)
         """
-        # TODO
+        prezzo_medio = []
+
+        for distributore in DistributoreDAO.get_distributori():
+            prezzi = PrezzoDAO.get_prezzi(distributore.id)
+            if prezzi is not None:
+                prezzi_mese=[]
+                for prezzo in prezzi:
+                    if int(prezzo.data.month) == mese:
+                        prezzi_mese.append(prezzo.prezzo_litro)
+                if len(prezzi_mese) > 0:
+                    media = sum(prezzi_mese)/len(prezzi_mese)
+                    prezzo_medio.append((distributore.nome, media))
+        return prezzo_medio
+
 
     def get_sequenza_ottima(self, mese:int):
         """
@@ -53,4 +67,14 @@ class Model:
         Restituisce i prezzi dei primi 7 giorni del mese selezionato per ciascun distributore.
         :return: un dizionario: {id_distributore: [prezzo_giorno1, ..., prezzo_giorno7]}
         """
-        # TODO
+        prezzi_prima_settimana_mese = {}
+        for distributore in DistributoreDAO.get_distributori():
+            prezzi = PrezzoDAO.get_prezzi(distributore.id)
+            if prezzi is not None:
+                prezzi_prima_settimana_mese[distributore.id]= []
+                for prezzo in prezzi:
+                    if int(prezzo.data.month) == mese:
+                        if int(prezzo.data.day) in range(1,8):
+                            prezzi_prima_settimana_mese[distributore.id].append(prezzo.prezzo_litro)
+        return prezzi_prima_settimana_mese
+
