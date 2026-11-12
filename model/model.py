@@ -86,6 +86,7 @@ class Model:
             prezzi = PrezzoDAO.get_prezzi(distributore.id)
             if prezzi is not None:
                 prezzi_prima_settimana_mese[distributore.id]= []
+                prezzi.sort(key=lambda prezzo: prezzo.data.day)
                 for prezzo in prezzi:
                     if int(prezzo.data.month) == mese:
                         if int(prezzo.data.day) in range(1,8):
