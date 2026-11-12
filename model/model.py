@@ -27,8 +27,7 @@ class Model:
         :return: lista di tuple --> (nome del distributore, media), es. (Distributore A, 1.789)
         """
         prezzo_medio = []
-
-        for distributore in DistributoreDAO.get_distributori():
+        for distributore in self._distributori:
             prezzi = PrezzoDAO.get_prezzi(distributore.id)
             if prezzi is not None:
                 prezzi_mese=[]
@@ -58,9 +57,24 @@ class Model:
         sequenza_nomi = [f"Giorno {giorno}: {id_to_nome[i]}" for giorno, i in enumerate(self.__sequenza_ottima, start=1)]
         return sequenza_nomi, round(self.__costo_ottimo, 2)
 
+
     def __ricorsione(self, sequenza_parziale, giorno, ultimo_distributore, costo_corrente, prezzi_settimana):
         """ Implementa la ricorsione """
-        # TODO
+
+        if giorno < 8:
+            for distributore in self._distributori:
+                costo = 100 * prezzi_settimana[distributore.id][giorno-1]
+                if ultimo_distributore is not None and distributore.id != ultimo_distributore.id:
+                    costo += 5
+                sequenza = sequenza_parziale+[distributore.id]
+                self.__ricorsione(sequenza, giorno+1, distributore, costo_corrente+costo, prezzi_settimana)
+
+        else:
+            if self.__costo_ottimo == -1 or costo_corrente < self.__costo_ottimo:
+                self.__costo_ottimo = costo_corrente
+                self.__sequenza_ottima = sequenza_parziale
+
+
 
     def __get_prezzi_prima_settimana_mese(self, mese: int):
         """
@@ -68,7 +82,7 @@ class Model:
         :return: un dizionario: {id_distributore: [prezzo_giorno1, ..., prezzo_giorno7]}
         """
         prezzi_prima_settimana_mese = {}
-        for distributore in DistributoreDAO.get_distributori():
+        for distributore in self._distributori:
             prezzi = PrezzoDAO.get_prezzi(distributore.id)
             if prezzi is not None:
                 prezzi_prima_settimana_mese[distributore.id]= []
